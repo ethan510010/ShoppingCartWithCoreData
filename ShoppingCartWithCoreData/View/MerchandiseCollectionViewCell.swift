@@ -28,15 +28,16 @@ class MerchandiseCollectionViewCell: UICollectionViewCell {
     func updateUI(model:MerChandise){
         self.itemImage.image = UIImage(named: model.imageName)
         self.itemName.text = "商品名: \(model.name)"
-        self.itemPrice.text = "價格: NT$\(model.price)"
+        self.itemPrice.text = "價格: NT$\(model.price)元"
         self.itemNumber.text = "數量: \(model.number)"
+        //要把原本值傳回去原本的stepper，這行很重要
+        self.stepper.value = Double(model.number)
     }
     
     
     @IBAction func stepperAction(_ sender: UIStepper) {
         guard let index = index else {return}
         delegate?.stepperDidTapped(index: index, merchandiseNumber: Int(sender.value))
-        print("sender:\(sender.value)")
     }
     
     

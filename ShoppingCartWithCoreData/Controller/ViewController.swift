@@ -20,13 +20,33 @@ class ViewController: UIViewController {
     @IBOutlet weak var totalCost: UILabel!
     
     
+    @IBAction func addToShoppingCart(_ sender: UIButton) {
+    }
+    
+    @IBAction func goShoppingCart(_ sender: UIButton) {
+        performSegue(withIdentifier: "goShoppingCart", sender: nil)
+    }
+    
+    
+    //因為還沒有建立CoreData先用傳值的方式來做效果
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        guard segue.identifier == "goShoppingCart" else {return}
+        guard let shoppingCartVC = segue.destination as? ShoppingCartViewController else { return }
+        shoppingCartVC.delegate = self
+        //把現在有的東西傳過去
+        for eachMerchandise in tableTennisBlades{
+            if eachMerchandise.number != 0 {
+                shoppingCartVC.shoppingCart.append(eachMerchandise)
+            }
+        }
+       
+    }
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         merchandiseCollectionview.delegate = self
         merchandiseCollectionview.dataSource = self
-        
-        
-        
 
         merchandiseCollectionview.showsVerticalScrollIndicator = false
         // Do any additional setup after loading the view, typically from a nib.
@@ -45,15 +65,32 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
 }
-extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, stepperDidTappedDelegate{
+extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, stepperDidTappedDelegate, WhichMerchandiseDeletedDelegate{
     
+    //Merchandise刪除的Delegate
+    func whichMerchandiseBeDeleted(merchandise: MerChandise) {
+        
+        var totalMoney = 0
+        for eachItem in tableTennisBlades{
+            if eachItem === merchandise{
+                eachItem.number = 0
+            }
+            totalMoney += (eachItem.number * eachItem.price)
+            self.totalCost.text = "總金額: \(totalMoney)"
+        }
+        
+        self.merchandiseCollectionview.reloadData()
+    }
+    
+    
+    //Stepper的delegate
     func stepperDidTapped(index: IndexPath, merchandiseNumber: Int) {
         print(merchandiseNumber)
         self.tableTennisBlades[index.item].number = merchandiseNumber
         print(tableTennisBlades[index.item].number)
         
         self.merchandiseCollectionview.reloadData()
-        
+
         //處理總金額
         var totalPrice = 0
         for itemSelected in tableTennisBlades{
@@ -61,8 +98,6 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
             self.totalCost.text = "總金額: \(totalPrice)"
         }
     }
-    
-    
     
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
